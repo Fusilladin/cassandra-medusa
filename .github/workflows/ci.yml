@@ -353,11 +353,14 @@ jobs:
           context: ./cassandra-medusa
           tags: k8ssandra/medusa:${{ env.short_sha }}-tmp
           platforms: linux/amd64
-          push: true
+          push: false
+          load: true
       - name: Setup kind cluster
         working-directory: k8ssandra-operator
         run: |
           make single-up
+          # fork-only: load the image into kind instead of pushing it to Docker Hub
+          for c in $(kind get clusters); do kind load docker-image k8ssandra/medusa:${{ env.short_sha }}-tmp --name "$c"; done
       - name: Run e2e test ( ${{ matrix.e2e_test }} )
         working-directory: k8ssandra-operator
         run: |
